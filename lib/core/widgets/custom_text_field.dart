@@ -2,14 +2,22 @@ import 'package:flutter/material.dart';
 
 class CustomTextField extends StatelessWidget {
   final String hintText;
-  final bool obscureText;
+  bool obscureText;
   final IconData prefixIcon;
+  final bool isPasswordField;
+  final VoidCallback? onSuffixIconPressed;
+  final TextEditingController? controller;
+  final String? Function(String?)? validator;
 
-  const CustomTextField({
+  CustomTextField({
     super.key,
     required this.hintText,
     this.obscureText = false,
     required this.prefixIcon,
+    this.onSuffixIconPressed,
+    this.isPasswordField = false,
+    this.controller,
+    this.validator,
   });
 
   @override
@@ -27,8 +35,10 @@ class CustomTextField extends StatelessWidget {
           ),
         ],
       ),
-      child: TextField(
+      child: TextFormField(
         obscureText: obscureText,
+        controller: controller,
+        validator: validator,
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: TextStyle(color: Colors.grey.shade400),
@@ -37,6 +47,20 @@ class CustomTextField extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             borderSide: BorderSide.none,
           ),
+          suffixIcon: isPasswordField
+              ? IconButton(
+                  onPressed: onSuffixIconPressed,
+                  icon: obscureText
+                      ? Icon(
+                          Icons.visibility_outlined,
+                          color: Colors.grey.shade600,
+                        )
+                      : Icon(
+                          Icons.visibility_off_outlined,
+                          color: Colors.grey.shade600,
+                        ),
+                )
+              : null,
           filled: true,
           fillColor: Colors.transparent,
           contentPadding: const EdgeInsets.symmetric(vertical: 20),
