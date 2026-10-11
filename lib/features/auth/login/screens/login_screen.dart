@@ -1,4 +1,6 @@
-
+import 'package:dio/dio.dart';
+import 'package:ecommerce_app_huma_volve/core/network/dio_client.dart';
+import 'package:ecommerce_app_huma_volve/features/auth/service/auth_service.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/widgets/custom_text_field.dart';
@@ -18,11 +20,15 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController emailController;
   late final TextEditingController passwordController;
+  late final AuthService authService;
+  late final DioClient dioClient;
 
   @override
   void initState() {
     emailController = TextEditingController();
     passwordController = TextEditingController();
+    dioClient = DioClient();
+    authService = AuthService(dioClient: dioClient);
 
     super.initState();
   }
@@ -108,13 +114,32 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 32),
                 PrimaryButton(
                   text: 'Login',
-                  onPressed: () {
+                  onPressed: () async {
                     if (_formKey.currentState?.validate() ?? false) {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => MainNavigationScreen(),
-                        ),
-                      );
+                      try {
+                        final loginModel = await authService.login(
+                          email: emailController.text.trim(),
+                          password: passwordController.text.trim(),
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('login successful'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (context) => MainNavigationScreen(),
+                          ),
+                        );
+                      } on DioException catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Login failed. Please try again.'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
                     }
                   },
                 ),
