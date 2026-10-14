@@ -1,8 +1,19 @@
+import 'package:ecommerce_app_huma_volve/core/network/dio_client.dart';
+import 'package:ecommerce_app_huma_volve/features/auth/data/data_sources/auth_local_data_source.dart';
+import 'package:ecommerce_app_huma_volve/features/auth/data/data_sources/auth_remote_data_source.dart';
+import 'package:ecommerce_app_huma_volve/features/auth/data/repos/auth_repo_imp.dart';
+import 'package:ecommerce_app_huma_volve/features/auth/domain/usecases/login_usecase.dart';
+import 'package:ecommerce_app_huma_volve/features/auth/domain/usecases/signup_usecase.dart';
+import 'package:ecommerce_app_huma_volve/features/auth/presentation/cubits/auth_cubit/auth_cubit.dart';
+import 'package:ecommerce_app_huma_volve/features/auth/presentation/cubits/session_cubit/session_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
 import '../../../core/dummy_data.dart';
-import '../../../core/theme.dart';
+import '../../../core/themes/theme.dart';
 import '../widgets/profile_menu_item.dart';
-import '../../auth/login/screens/login_screen.dart';
+import '../../auth/presentation/screens/login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -17,10 +28,7 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 24),
             const Text(
               'Profile',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 32),
             Stack(
@@ -50,18 +58,12 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               dummyUser.name,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
             Text(
               dummyUser.email,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade600,
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
             ),
             const SizedBox(height: 32),
             Expanded(
@@ -99,13 +101,39 @@ class ProfileScreen extends StatelessWidget {
                     title: 'Logout',
                     isDestructive: true,
                     onTap: () {
+                      final sessionCubit = context.read<SessionCubit>();
+                      sessionCubit.logout();
                       Navigator.pushReplacement(
                         context,
                         PageRouteBuilder(
-                          pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
-                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                            return FadeTransition(opacity: animation, child: child);
-                          },
+                          pageBuilder: (
+                            context,
+                            animation,
+                            secondaryAnimation,
+                          ) => BlocProvider(
+                            create: (context) {
+                              final AuthRepoImp authRepoImp = AuthRepoImp(
+                                authRemoteDataSource: AuthRemoteDataSource(
+                                  dioClient: DioClient(),
+                                ),
+                                authLocalDataSource: AuthLocalDataSource(
+                                  storage: FlutterSecureStorage(),
+                                ),
+                              );
+                              return AuthCubit(
+                                loginUsecase: LoginUsecase(authRepo: authRepoImp),
+                                signupUsecase: SignupUsecase(authRepo: authRepoImp),
+                              );
+                            },
+                            child: LoginScreen(),
+                          ),
+                          transitionsBuilder:
+                              (context, animation, secondaryAnimation, child) {
+                                return FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                );
+                              },
                         ),
                       );
                     },
