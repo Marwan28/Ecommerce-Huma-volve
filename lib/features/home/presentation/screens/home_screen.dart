@@ -16,6 +16,20 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedCategoryIndex = 0;
+  late final ScrollController scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    scrollController = ScrollController();
+    scrollController.addListener(() {
+      if (scrollController.position.pixels >=
+          scrollController.position.maxScrollExtent - 200) {
+        context.read<HomeCubit>().loadMoreProducts();
+      }
+    });
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: AppTheme.background,
       body: SafeArea(
         child: CustomScrollView(
+          controller: scrollController,
           slivers: [
             SliverToBoxAdapter(
               child: Padding(
@@ -134,8 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     setState(() {
                                       _selectedCategoryIndex = index;
                                       context.read<HomeCubit>().getProducts(
-                                        categoryId: state.categories[index].id
-                                            .toString(),
+                                        categoryId: state.categories[index].id!,
                                       );
                                     });
                                   },
@@ -162,30 +176,29 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 24),
               sliver: BlocBuilder<HomeCubit, HomeState>(
                 builder: (context, state) {
-                  if(state is HomeProductsSuccess){
-                  return SliverGrid(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.7,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                        ),
-                    delegate: SliverChildBuilderDelegate((context, index) {
-                      return ProductCard(product: state.products[index]);
-                    }, childCount: state.products.length),
-                  );
-                } else if (state is HomeProductsLoading) {
-                  return const SliverToBoxAdapter(
-                    child: Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                  );
-                } else if (state is HomeProductsFailure) {
-                  return SliverToBoxAdapter(child: Text(state.errorMessage));
-                } else {
-                  return const SliverToBoxAdapter(child: SizedBox.shrink());}
-    }
+                  if (state is HomeProductsSuccess) {
+                    return SliverGrid(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio: 0.7,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                          ),
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        return ProductCard(product: state.products[index]);
+                      }, childCount: state.products.length),
+                    );
+                  } else if (state is HomeProductsLoading) {
+                    return const SliverToBoxAdapter(
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  } else if (state is HomeProductsFailure) {
+                    return SliverToBoxAdapter(child: Text(state.errorMessage));
+                  } else {
+                    return const SliverToBoxAdapter(child: SizedBox.shrink());
+                  }
+                },
               ),
             ),
             const SliverToBoxAdapter(child: SizedBox(height: 24)),
