@@ -1,7 +1,8 @@
 import 'package:ecommerce_app_huma_volve/core/themes/theme.dart';
-import 'package:ecommerce_app_huma_volve/features/details/screens/product_details_screen.dart';
+import 'package:ecommerce_app_huma_volve/features/details/presentation/screens/product_details_screen.dart';
 import 'package:ecommerce_app_huma_volve/features/home/domain/entities/product_entity.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class ProductCard extends StatelessWidget {
   final ProductEntity product;
@@ -12,17 +13,7 @@ class ProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          PageRouteBuilder(
-            transitionDuration: const Duration(milliseconds: 500),
-            pageBuilder: (context, animation, secondaryAnimation) => 
-                ProductDetailsScreen(product: product),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-          ),
-        );
+        context.push('/products/${product.id!.toString()}');
       },
       child: Container(
         decoration: BoxDecoration(
@@ -47,7 +38,9 @@ class ProductCard extends StatelessWidget {
                   Hero(
                     tag: 'product-${product.title}',
                     child: ClipRRect(
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(24),
+                      ),
                       child: Image.network(
                         product.images![0],
                         fit: BoxFit.cover,

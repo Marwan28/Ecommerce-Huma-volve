@@ -24,4 +24,10 @@ class HomeRemoteDataSource {
     );
     return (result.data as List).map((e) => ProductModel.fromJson(e)).toList();
   }
+  Future<ProductModel> getProduct({required String productId}) async {
+    final result = await dioClient.dio.get(
+      '${ApiConstants.productEndpoint}/$productId',
+    );
+    return ProductModel.fromJson(result.data);
+  }
 }
