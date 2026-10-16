@@ -1,4 +1,5 @@
 import 'package:ecommerce_app_huma_volve/core/network/dio_client.dart';
+import 'package:ecommerce_app_huma_volve/core/router/app_router.dart';
 import 'package:ecommerce_app_huma_volve/features/auth/data/data_sources/auth_local_data_source.dart';
 import 'package:ecommerce_app_huma_volve/features/auth/data/data_sources/auth_remote_data_source.dart';
 import 'package:ecommerce_app_huma_volve/features/auth/data/repos/auth_repo_imp.dart';
@@ -36,11 +37,12 @@ class MyApp extends StatelessWidget {
         logoutUsecase: LogoutUsecase(authRepo: authRepoImp),
       );
       },
-      child: MaterialApp(
+      child: MaterialApp.router(
         title: 'E-Commerce App',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
-        home: const SplashScreen(),
+        // home: const SplashScreen(),
+        routerConfig: AppRouter.router,
       ),
     );
   }

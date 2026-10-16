@@ -10,6 +10,7 @@ import 'package:ecommerce_app_huma_volve/features/main_navigation/screens/main_n
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/themes/theme.dart';
 import '../../auth/presentation/screens/login_screen.dart';
@@ -33,34 +34,11 @@ class _SplashScreenState extends State<SplashScreen> {
     await sessionCubit.checkSession();
     await Future.delayed(const Duration(seconds: 2));
     if (mounted) {
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              (sessionCubit.state is SessionAuthenticated)
-              ? MainNavigationScreen()
-              : BlocProvider(
-                  create: (context) {
-                    final AuthRepoImp authRepoImp = AuthRepoImp(
-                      authRemoteDataSource: AuthRemoteDataSource(
-                        dioClient: DioClient(),
-                      ),
-                      authLocalDataSource: AuthLocalDataSource(
-                        storage: FlutterSecureStorage(),
-                      ),
-                    );
-                    return AuthCubit(
-                      loginUsecase: LoginUsecase(authRepo: authRepoImp),
-                      signupUsecase: SignupUsecase(authRepo: authRepoImp),
-                    );
-                  },
-                  child: LoginScreen(),
-                ),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-        ),
-      );
+      if (sessionCubit.state is SessionAuthenticated) {
+        context.go('/main-navigation');
+      } else {
+        context.go('/login');
+      }
     }
   }
 

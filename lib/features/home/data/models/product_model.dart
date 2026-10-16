@@ -2,14 +2,14 @@ import 'package:ecommerce_app_huma_volve/features/home/data/models/category_mode
 import 'package:ecommerce_app_huma_volve/features/home/domain/entities/product_entity.dart';
 
 class ProductModel extends ProductEntity {
-  num? id;
+
   String? slug;
   CategoryModel? category;
   String? creationAt;
   String? updatedAt;
 
   ProductModel({
-    this.id,
+    super.id,
     super.title,
     this.slug,
     super.price,
@@ -52,6 +52,7 @@ class ProductModel extends ProductEntity {
 
   ProductEntity toEntity() {
     return ProductEntity(
+      id: id,
       title: title,
       price: price,
       description: description,
