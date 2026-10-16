@@ -13,9 +13,14 @@ class HomeRemoteDataSource {
     return (result.data as List).map((e) => CategoryModel.fromJson(e)).toList();
   }
 
-  Future<List<ProductModel>> getProducts({required String categoryId}) async {
+  Future<List<ProductModel>> getProducts({
+    required String categoryId,
+    required int limit,
+    required int offset,
+  }) async {
     final result = await dioClient.dio.get(
       '${ApiConstants.categoryEndpoint}/$categoryId/${ApiConstants.productEndpoint}',
+      queryParameters: {'limit': limit, 'offset': offset},
     );
     return (result.data as List).map((e) => ProductModel.fromJson(e)).toList();
   }

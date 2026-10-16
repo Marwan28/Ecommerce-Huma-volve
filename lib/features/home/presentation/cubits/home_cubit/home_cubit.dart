@@ -1,4 +1,3 @@
-import 'package:ecommerce_app_huma_volve/features/home/data/models/category_model.dart';
 import 'package:ecommerce_app_huma_volve/features/home/domain/entities/category_entity.dart';
 import 'package:ecommerce_app_huma_volve/features/home/domain/entities/product_entity.dart';
 import 'package:ecommerce_app_huma_volve/features/home/domain/usecases/get_categories_usecase.dart';
@@ -11,6 +10,9 @@ part 'home_state.dart';
 class HomeCubit extends Cubit<HomeState> {
   final GetCategoriesUsecase getCategoriesUsecase;
   final GetProductsUsecase getProductsUsecase;
+  int offset = 0;
+  int limit = 6;
+  num currentCategoryId = 0;
 
   HomeCubit({
     required this.getCategoriesUsecase,
@@ -19,8 +21,6 @@ class HomeCubit extends Cubit<HomeState> {
     getCategories();
   }
 
-  // List<CategoryModel> categories = [];
-  // List<ProductModel> products = [];
 
   void getCategories() async {
     emit(HomeCategoriesLoading());
@@ -31,14 +31,22 @@ class HomeCubit extends Cubit<HomeState> {
           emit(HomeCategoriesFailure(errorMessage: failure.failureMessage)),
       (categories) {
         emit(HomeCategoriesSuccess(categories: categories));
-        getProducts(categoryId: categories[0].id!.toString());
+        currentCategoryId = categories.first.id!;
+        getProducts(categoryId: currentCategoryId);
       },
     );
   }
 
-  void getProducts({required String categoryId}) async {
+  void getProducts({required num categoryId}) async {
+    if (state is HomeProductsLoading) return;
+    offset = 0;
+    currentCategoryId = categoryId;
     emit(HomeProductsLoading());
-    final result = await getProductsUsecase.call(categoryId: categoryId);
+    final result = await getProductsUsecase.call(
+      categoryId: categoryId.toString(),
+      limit: limit,
+      offset: offset,
+    );
     if (isClosed) return;
 
     result.fold(
@@ -46,6 +54,28 @@ class HomeCubit extends Cubit<HomeState> {
           emit(HomeProductsFailure(errorMessage: failure.failureMessage)),
       (products) => emit(HomeProductsSuccess(products: products)),
     );
+  }
 
+  void loadMoreProducts() async {
+    if (state is HomeProductsLoading) return;
+    final currentState = state as HomeProductsSuccess;
+    offset += limit;
+    final result = await getProductsUsecase.call(
+      categoryId: currentCategoryId.toString(),
+      limit: limit,
+      offset: offset,
+    );
+    if (isClosed) return;
+    result.fold(
+      (failure) =>
+          emit(HomeProductsFailure(errorMessage: failure.failureMessage)),
+      (newProducts) {
+        emit(
+          HomeProductsSuccess(
+            products: [...currentState.products, ...newProducts],
+          ),
+        );
+      },
+    );
   }
 }
